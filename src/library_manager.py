@@ -71,20 +71,20 @@ class LibraryManager:
         borrower = self.borrowers[borrower_id]
         book = self.books[isbn]
 
-        # 3. 检查图书是否在馆
-        if not book.is_available:
-            raise ValueError(f"Book with ISBN '{isbn}' is currently not available")
-
-        # 4. 检查借阅人是否已达到上限
-        if not borrower.can_borrow():
-            raise ValueError(f"Borrower '{borrower_id}' has reached the maximum borrowing limit of {Borrower.MAX_BORROW_LIMIT}")
-
-        # 5. 检查是否已经借阅了该书且未归还
+        # 3. 检查是否已经借阅了该书且未归还 (优先于可用性检查，以便给出更明确的错误提示)
         for record in self.records:
             if (record.borrower_id == borrower_id and 
                 record.isbn == isbn and 
                 not record.is_returned()):
                 raise ValueError(f"Borrower '{borrower_id}' has already borrowed this book '{isbn}' and it is not yet returned")
+
+        # 4. 检查图书是否在馆
+        if not book.is_available:
+            raise ValueError(f"Book with ISBN '{isbn}' is currently not available")
+
+        # 5. 检查借阅人是否已达到上限
+        if not borrower.can_borrow():
+            raise ValueError(f"Borrower '{borrower_id}' has reached the maximum borrowing limit of {Borrower.MAX_BORROW_LIMIT}")
 
         # 6. 创建借阅记录
         record = BorrowRecord(
