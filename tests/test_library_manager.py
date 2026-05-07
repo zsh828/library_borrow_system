@@ -111,9 +111,9 @@ class TestBorrowBook:
         # 先借走
         lib.borrow_book(b_id, isbn)
         
-        # 再次尝试借阅同一本书
+        # 另一个借阅人尝试借同一本（此时书不可用）
         with pytest.raises(ValueError, match="not available"):
-            lib.borrow_book(b_id, isbn)
+            lib.borrow_book(sample_data["borrower2"].borrower_id, isbn)
 
     def test_borrow_already_borrowed_book_raises_error(self, sample_data):
         lib = sample_data["library"]
@@ -123,11 +123,9 @@ class TestBorrowBook:
         # 先借走
         lib.borrow_book(b_id, isbn)
         
-        # 另一个借阅人尝试借同一本（虽然书不可用，但主要验证逻辑）
-        # 这里主要验证的是同一个借阅人不能重复借同一本未还的书
-        # 如果是不同借阅人，会因为图书不在馆报错
-        with pytest.raises(ValueError, match="not available"):
-            lib.borrow_book(sample_data["borrower2"].borrower_id, isbn)
+        # 再次尝试借阅同一本未还的书，应触发“已借未还”错误
+        with pytest.raises(ValueError, match="already borrowed"):
+            lib.borrow_book(b_id, isbn)
 
     def test_borrow_reaches_limit_raises_error(self, sample_data):
         lib = sample_data["library"]
